@@ -30,7 +30,7 @@ Before you begin, make sure you have:
 
 
 # Clone the repository (if using Git)
-git clone <your-backend-repo-url>
+git clone https://github.com/AdedayoWilliams09/loanflow-backend
 cd backend
 
 # Install dependencies
@@ -296,7 +296,7 @@ text
 - No spaces around the = sign: MONGO_URI=mongodb://...
 
 ### Links
-Frontend README - Documentation for the frontend
+[Frontend README] (https://github.com/AdedayoWilliams09/loanflow-frontend) - Documentation for the frontend
 
 
 

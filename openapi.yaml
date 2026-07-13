@@ -33,7 +33,7 @@ info:
 servers:
   - url: http://localhost:5000
     description: Development Server
-  - url: https://your-backend-url.onrender.com
+  - url: https://loanflow-backend-fprb.onrender.com
     description: Production Server
 
 tags:
