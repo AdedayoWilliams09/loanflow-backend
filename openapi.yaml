@@ -1,0 +1,322 @@
+# FILE: backend/openapi.yaml
+# CREATED: New file
+
+openapi: 3.0.3
+info:
+  title: LoanFlow API
+  description: |
+    # LoanFlow - Fintech Loan Management Platform API
+    
+    This API provides endpoints for managing loans, users, repayments, 
+    and system health monitoring.
+    
+    ## Foundation Phase Features
+    - System health checks
+    - API connectivity testing
+    - Monitoring and diagnostics
+    
+    ## Upcoming Features
+    - User authentication
+    - Loan application processing
+    - Repayment management
+    - Admin dashboard
+    - And more...
+    
+  version: 1.0.0
+  contact:
+    name: LoanFlow Support
+    email: support@loanflow.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:5000
+    description: Development Server
+  - url: https://your-backend-url.onrender.com
+    description: Production Server
+
+tags:
+  - name: Health
+    description: System health monitoring endpoints
+  - name: Test
+    description: API connectivity testing endpoints
+
+# Components section for reusable schemas
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [OK, ERROR]
+          example: OK
+          description: System health status
+        timestamp:
+          type: string
+          format: date-time
+          example: 2024-01-15T10:30:00.000Z
+          description: Response timestamp
+        uptime:
+          type: number
+          example: 123.45
+          description: Server uptime in seconds
+        uptimeFormatted:
+          type: string
+          example: 2m 3s
+          description: Human-readable uptime
+        mongoConnected:
+          type: boolean
+          example: true
+          description: MongoDB connection status
+        mongoState:
+          type: integer
+          enum: [0, 1, 2, 3, 99]
+          example: 1
+          description: MongoDB connection state
+        mongoStateDescription:
+          type: string
+          enum: [Disconnected, Connected, Connecting, Disconnecting, Uninitialized]
+          example: Connected
+          description: Human-readable connection state
+        environment:
+          type: string
+          enum: [development, staging, production]
+          example: development
+          description: Current environment
+    
+    TestResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+          description: Operation success status
+        message:
+          type: string
+          example: API connection successful
+          description: Status message
+        data:
+          type: object
+          properties:
+            backendStatus:
+              type: string
+              enum: [healthy, unhealthy]
+              example: healthy
+              description: Backend health status
+            timestamp:
+              type: string
+              format: date-time
+              example: 2024-01-15T10:30:00.000Z
+              description: Response timestamp
+            uptime:
+              type: number
+              example: 123.45
+              description: Server uptime in seconds
+            environment:
+              type: string
+              example: development
+              description: Current environment
+            apiVersion:
+              type: string
+              example: 1.0.0
+              description: API version
+    
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+          description: Operation success status
+        message:
+          type: string
+          example: Route not found
+          description: Error message
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                example: email
+                description: Invalid field
+              message:
+                type: string
+                example: Email is required
+                description: Validation message
+          description: Validation errors (if any)
+        timestamp:
+          type: string
+          format: date-time
+          example: 2024-01-15T10:30:00.000Z
+          description: Error timestamp
+        path:
+          type: string
+          example: /api/unknown
+          description: Request path
+        stack:
+          type: string
+          description: Stack trace (development only)
+
+# Paths section defines all API endpoints
+paths:
+  /api/health:
+    get:
+      tags:
+        - Health
+      summary: System Health Check
+      description: |
+        Checks if the server is running and healthy.
+        
+        This endpoint is lightweight and fast, making it ideal for:
+        - Monitoring services and load balancers
+        - Frontend to verify backend availability
+        - Quick system status checks
+        
+        The response includes MongoDB connection status to verify database connectivity.
+      operationId: getHealth
+      responses:
+        '200':
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                success:
+                  summary: Healthy server
+                  value:
+                    status: OK
+                    timestamp: 2024-01-15T10:30:00.000Z
+                    uptime: 123.45
+                    uptimeFormatted: 2m 3s
+                    mongoConnected: true
+                    mongoState: 1
+                    mongoStateDescription: Connected
+                    environment: development
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                error:
+                  summary: Server error
+                  value:
+                    success: false
+                    message: Internal Server Error
+                    timestamp: 2024-01-15T10:30:00.000Z
+                    path: /api/health
+
+  /api/test:
+    get:
+      tags:
+        - Test
+      summary: Test API Connection
+      description: |
+        Tests if the API is reachable and functioning properly.
+        
+        This endpoint is used for:
+        - Frontend-backend connectivity testing
+        - Verifying API is operational
+        - Debugging connection issues
+        
+        It validates that no unexpected query parameters are sent as a security measure.
+      operationId: testConnection
+      parameters:
+        - name: invalid
+          in: query
+          schema:
+            type: string
+          description: Invalid query parameter (will cause 400 error)
+          deprecated: true
+      responses:
+        '200':
+          description: API is reachable and working
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestResponse'
+              examples:
+                success:
+                  summary: API is healthy
+                  value:
+                    success: true
+                    message: API connection successful
+                    data:
+                      backendStatus: healthy
+                      timestamp: 2024-01-15T10:30:00.000Z
+                      uptime: 123.45
+                      environment: development
+                      apiVersion: 1.0.0
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidParam:
+                  summary: Invalid query parameter
+                  value:
+                    success: false
+                    message: Invalid query parameters
+                    errors:
+                      - field: invalid
+                        message: "Unexpected query parameters: invalid"
+                    timestamp: 2024-01-15T10:30:00.000Z
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                rateLimit:
+                  summary: Too many requests
+                  value:
+                    success: false
+                    message: Too many requests from this IP, please try again later.
+                    timestamp: 2024-01-15T10:30:00.000Z
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Simple Health Check
+      description: |
+        Quick health check endpoint without API prefix.
+        
+        Returns minimal health information. Use `/api/health` for detailed status.
+      operationId: simpleHealth
+      responses:
+        '200':
+          description: Server is running
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: 2024-01-15T10:30:00.000Z
+                  environment:
+                    type: string
+                    example: development
+                  uptime:
+                    type: number
+                    example: 123.45
