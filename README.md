@@ -296,7 +296,7 @@ text
 - No spaces around the = sign: MONGO_URI=mongodb://...
 
 ### Links
-[Frontend README] (https://github.com/AdedayoWilliams09/loanflow-frontend) - Documentation for the frontend
+- [Frontend README](https://github.com/AdedayoWilliams09/loanflow-frontend) - Documentation for the frontend
 
 
 
