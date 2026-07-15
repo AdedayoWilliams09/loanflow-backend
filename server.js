@@ -11,6 +11,10 @@ import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import connectDB from './config/db.js';
 import { errorHandler, notFoundHandler } from './middleware/errorMiddleware.js';
+import testimonialRoutes from './routes/testimonialRoutes.js';
+import faqRoutes from './routes/faqRoutes.js';
+import loanProductRoutes from './routes/loanProductRoutes.js';
+import settingsRoutes from './routes/settingsRoutes.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -151,6 +155,11 @@ import testRoutes from './routes/testRoutes.js';
 app.use('/api/health', healthRoutes);
 app.use('/api/test', testRoutes);
 
+app.use('/api/testimonials', testimonialRoutes);
+app.use('/api/faqs', faqRoutes);
+app.use('/api/loan-products', loanProductRoutes);
+app.use('/api/settings', settingsRoutes);
+
 // 9. 404 Handler (must be after all routes)
 //  "This is for when someone asks for something that doesn't exist"
 app.use(notFoundHandler);
@@ -158,6 +167,8 @@ app.use(notFoundHandler);
 // 10. Global Error Handler (must be last)
 //  "This is our emergency response team"
 app.use(errorHandler);
+
+
 
 /**
  * Start Server

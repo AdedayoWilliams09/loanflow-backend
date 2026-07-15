@@ -1,5 +1,5 @@
 # FILE: backend/openapi.yaml
-# CREATED: New file
+# UPDATED: Merged Homepage Phase schemas and paths into full configuration
 
 openapi: 3.0.3
 info:
@@ -9,20 +9,28 @@ info:
     
     This API provides endpoints for managing loans, users, repayments, 
     and system health monitoring.
-    
+
     ## Foundation Phase Features
     - System health checks
     - API connectivity testing
     - Monitoring and diagnostics
+
+    
+    ## Homepage Phase Features
+    - System health checks
+    - API connectivity testing
+    - Customer testimonials
+    - Frequently Asked Questions
+    - Loan products
+    - Settings (hero, statistics, features)
     
     ## Upcoming Features
     - User authentication
     - Loan application processing
     - Repayment management
     - Admin dashboard
-    - And more...
     
-  version: 1.0.0
+  version: 1.1.0
   contact:
     name: LoanFlow Support
     email: support@loanflow.com
@@ -41,8 +49,15 @@ tags:
     description: System health monitoring endpoints
   - name: Test
     description: API connectivity testing endpoints
+  - name: Testimonials
+    description: Customer testimonial management
+  - name: FAQs
+    description: Frequently asked questions
+  - name: Loan Products
+    description: Loan product management
+  - name: Settings
+    description: Application settings management
 
-# Components section for reusable schemas
 components:
   schemas:
     HealthResponse:
@@ -160,8 +175,192 @@ components:
         stack:
           type: string
           description: Stack trace (development only)
+          
+    Testimonial:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 67a3b4c5d6e7f8g9h0i1j2k3
+        customerName:
+          type: string
+          example: Chidi Okonkwo
+        customerRole:
+          type: string
+          example: Small Business Owner
+        content:
+          type: string
+          example: LoanFlow helped me expand my business...
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 5
+        avatarUrl:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+          default: true
+        order:
+          type: integer
+          default: 0
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    
+    FAQ:
+      type: object
+      properties:
+        _id:
+          type: string
+        question:
+          type: string
+          example: What types of loans do you offer?
+        answer:
+          type: string
+          example: We offer personal loans, business loans...
+        category:
+          type: string
+          enum: [general, loans, repayment, account]
+          example: general
+        order:
+          type: integer
+          default: 0
+        isActive:
+          type: boolean
+          default: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    
+    LoanProduct:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+          example: Personal Loan
+        description:
+          type: string
+          example: Quick funding for personal needs...
+        minAmount:
+          type: number
+          example: 50000
+        maxAmount:
+          type: number
+          example: 5000000
+        interestRate:
+          type: number
+          example: 12
+        processingFee:
+          type: number
+          example: 2.5
+        repaymentPeriod:
+          type: integer
+          example: 12
+        features:
+          type: array
+          items:
+            type: string
+          example: ["No collateral required", "Quick approval"]
+        iconName:
+          type: string
+          example: UserIcon
+        color:
+          type: string
+          enum: [blue, green, purple, orange, red]
+          example: blue
+        isActive:
+          type: boolean
+          default: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    
+    Statistics:
+      type: object
+      properties:
+        customers:
+          type: string
+          example: 10,000+
+        disbursed:
+          type: string
+          example: ₦50 Billion
+        approvalRate:
+          type: string
+          example: 98%
+        processingTime:
+          type: string
+          example: 24-Hour
+        customersLabel:
+          type: string
+          example: Happy Customers
+        disbursedLabel:
+          type: string
+          example: Disbursed to Date
+        approvalRateLabel:
+          type: string
+          example: Approval Rate
+        processingTimeLabel:
+          type: string
+          example: Average Processing
+    
+    HeroContent:
+      type: object
+      properties:
+        heading:
+          type: string
+          example: Get Fast, Flexible Loans When You Need Them Most
+        subheading:
+          type: string
+          example: Apply in minutes, get approval within 24 hours...
+        ctaText:
+          type: string
+          example: Apply Now
+        ctaLink:
+          type: string
+          example: /auth/register
+        secondaryCtaText:
+          type: string
+          example: Learn More
+        secondaryCtaLink:
+          type: string
+          example: "#features"
+        imageUrl:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+          default: true
+    
+    Feature:
+      type: object
+      properties:
+        title:
+          type: string
+          example: Fast Approval
+        description:
+          type: string
+          example: Get approved within 24 hours with our automated system
+        icon:
+          type: string
+          example: RocketLaunchIcon
+        color:
+          type: string
+          enum: [blue, green, purple, orange, red]
+          example: blue
 
-# Paths section defines all API endpoints
 paths:
   /api/health:
     get:
@@ -320,3 +519,235 @@ paths:
                   uptime:
                     type: number
                     example: 123.45
+
+  /api/testimonials:
+    get:
+      tags:
+        - Testimonials
+      summary: Get Testimonials
+      description: Retrieves active customer testimonials with pagination
+      operationId: getTestimonials
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 6
+          description: Number of testimonials to return
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+            default: true
+          description: Filter by active status
+      responses:
+        '200':
+          description: Testimonials retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Testimonials retrieved successfully
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Testimonial'
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+                      total:
+                        type: integer
+                      pages:
+                        type: integer
+                  timestamp:
+                    type: string
+                    format: date-time
+  
+  /api/faqs:
+    get:
+      tags:
+        - FAQs
+      summary: Get FAQs
+      description: Retrieves active frequently asked questions
+      operationId: getFAQs
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+          description: Number of FAQs to return
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [general, loans, repayment, account]
+          description: Filter by category
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+            default: true
+          description: Filter by active status
+      responses:
+        '200':
+          description: FAQs retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: FAQs retrieved successfully
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FAQ'
+                  timestamp:
+                    type: string
+                    format: date-time
+  
+  /api/loan-products:
+    get:
+      tags:
+        - Loan Products
+      summary: Get Loan Products
+      description: Retrieves active loan products
+      operationId: getLoanProducts
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+          description: Number of products to return
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+            default: true
+          description: Filter by active status
+      responses:
+        '200':
+          description: Loan products retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Loan products retrieved successfully
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LoanProduct'
+                  timestamp:
+                    type: string
+                    format: date-time
+  
+  /api/settings/statistics:
+    get:
+      tags:
+        - Settings
+      summary: Get Statistics
+      description: Retrieves trust statistics for the homepage
+      operationId: getStatistics
+      responses:
+        '200':
+          description: Statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Statistics retrieved successfully
+                  data:
+                    $ref: '#/components/schemas/Statistics'
+                  timestamp:
+                    type: string
+                    format: date-time
+  
+  /api/settings/hero:
+    get:
+      tags:
+        - Settings
+      summary: Get Hero Content
+      description: Retrieves hero section content for the homepage
+      operationId: getHeroContent
+      responses:
+        '200':
+          description: Hero content retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Hero content retrieved successfully
+                  data:
+                    $ref: '#/components/schemas/HeroContent'
+                  timestamp:
+                    type: string
+                    format: date-time
+  
+  /api/settings/features:
+    get:
+      tags:
+        - Settings
+      summary: Get Features
+      description: Retrieves feature cards for the homepage
+      operationId: getFeatures
+      responses:
+        '200':
+          description: Features retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Features retrieved successfully
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Feature'
+                  timestamp:
+                    type: string
+                    format: date-time
