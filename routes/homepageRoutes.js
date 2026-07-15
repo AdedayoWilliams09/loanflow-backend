@@ -5,6 +5,6 @@ import { getHomepageData } from '../controllers/homepageController.js';
 
 const router = express.Router();
 
-router.get('/', getHomepageData);
+router.get('/homepage', getHomepageData);
 
 export default router;

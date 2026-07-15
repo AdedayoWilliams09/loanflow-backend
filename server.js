@@ -156,7 +156,8 @@ import testRoutes from './routes/testRoutes.js';
 app.use('/api/health', healthRoutes);
 app.use('/api/test', testRoutes);
 
-app.use('/api/homepage', homepageRoutes);
+app.use('/api', homepageRoutes);
+
 app.use('/api/testimonials', testimonialRoutes);
 app.use('/api/faqs', faqRoutes);
 app.use('/api/loan-products', loanProductRoutes);
