@@ -14,6 +14,7 @@ import { errorHandler, notFoundHandler } from './middleware/errorMiddleware.js';
 import testimonialRoutes from './routes/testimonialRoutes.js';
 import faqRoutes from './routes/faqRoutes.js';
 import loanProductRoutes from './routes/loanProductRoutes.js';
+import homepageRoutes from './routes/homepageRoutes.js';
 import settingsRoutes from './routes/settingsRoutes.js';
 
 // Load environment variables from .env file
@@ -155,6 +156,7 @@ import testRoutes from './routes/testRoutes.js';
 app.use('/api/health', healthRoutes);
 app.use('/api/test', testRoutes);
 
+app.use('/api/homepage', homepageRoutes);
 app.use('/api/testimonials', testimonialRoutes);
 app.use('/api/faqs', faqRoutes);
 app.use('/api/loan-products', loanProductRoutes);
