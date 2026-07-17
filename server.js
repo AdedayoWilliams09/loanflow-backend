@@ -10,12 +10,16 @@ import morgan from 'morgan';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import connectDB from './config/db.js';
+import healthRoutes from './routes/healthRoutes.js';
+import testRoutes from './routes/testRoutes.js';
 import { errorHandler, notFoundHandler } from './middleware/errorMiddleware.js';
 import testimonialRoutes from './routes/testimonialRoutes.js';
 import faqRoutes from './routes/faqRoutes.js';
 import loanProductRoutes from './routes/loanProductRoutes.js';
 import homepageRoutes from './routes/homepageRoutes.js';
 import settingsRoutes from './routes/settingsRoutes.js';
+import teamRoutes from './routes/teamRoutes.js';
+import aboutRoutes from './routes/aboutRoutes.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -150,8 +154,7 @@ app.get('/health', (req, res) => {
 
 // 8. API Routes
 //  "These are the signs that direct people to different stations"
-import healthRoutes from './routes/healthRoutes.js';
-import testRoutes from './routes/testRoutes.js';
+
 
 app.use('/api/health', healthRoutes);
 app.use('/api/test', testRoutes);
@@ -161,6 +164,11 @@ app.use('/api', homepageRoutes);
 app.use('/api/testimonials', testimonialRoutes);
 app.use('/api/faqs', faqRoutes);
 app.use('/api/loan-products', loanProductRoutes);
+
+
+app.use('/api/team', teamRoutes);
+app.use('/api/settings/about', aboutRoutes);
+
 app.use('/api/settings', settingsRoutes);
 
 // 9. 404 Handler (must be after all routes)

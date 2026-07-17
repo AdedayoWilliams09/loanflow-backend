@@ -1,28 +1,32 @@
 // FILE: backend/src/seed.js
 
-
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { Testimonial } from './models/Testimonial.js';
 import { FAQ } from './models/FAQ.js';
 import { LoanProduct } from './models/LoanProduct.js';
 import { Settings } from './models/Settings.js';
+import { TeamMember } from './models/TeamMember.js';
+import { AboutSettings } from './models/AboutSettings.js';
 
 dotenv.config();
 
 const seedData = async () => {
   try {
+    // 1. Establish database connection first
     await mongoose.connect(process.env.MONGO_URI);
     console.log(' Connected to MongoDB');
 
-    // Clear existing data
+    // 2. Clear all existing data to prevent duplicates
     await Testimonial.deleteMany({});
     await FAQ.deleteMany({});
     await LoanProduct.deleteMany({});
     await Settings.deleteMany({});
+    await TeamMember.deleteMany({});
+    await AboutSettings.deleteMany({});
     console.log(' Cleared existing data');
 
-    // Seed Testimonials
+    // 3. Seed Testimonials
     const testimonials = [
       {
         customerName: 'Chidi Okonkwo',
@@ -53,7 +57,7 @@ const seedData = async () => {
     await Testimonial.insertMany(testimonials);
     console.log(' Seeded testimonials');
 
-    // Seed FAQs
+    // 4. Seed FAQs
     const faqs = [
       {
         question: 'What types of loans do you offer?',
@@ -102,7 +106,7 @@ const seedData = async () => {
     await FAQ.insertMany(faqs);
     console.log(' Seeded FAQs');
 
-    // Seed Loan Products
+    // 5. Seed Loan Products
     const loanProducts = [
       {
         name: 'Personal Loan',
@@ -161,7 +165,7 @@ const seedData = async () => {
     await LoanProduct.insertMany(loanProducts);
     console.log(' Seeded loan products');
 
-    // Seed Settings
+    // 6. Seed Settings
     const settings = [
       {
         key: 'hero',
@@ -240,6 +244,69 @@ const seedData = async () => {
     await Settings.insertMany(settings);
     console.log(' Seeded settings');
 
+    // 7. Seed Team Members (Now safely run after connection)
+    const teamMembers = [
+      {
+        name: 'Adedayo Williams',
+        role: 'CEO & Co-Founder',
+        bio: 'Adedayo has over 15 years of experience in fintech and banking. He previously led product teams at several major banks and holds an MBA from Harvard Business School.',
+        order: 1,
+        isActive: true,
+      },
+      {
+        name: 'Amina Bello',
+        role: 'CTO & Co-Founder',
+        bio: "Amina is a software engineer with a passion for financial inclusion. She has built multiple fintech products and holds a Master's in Computer Science from MIT.",
+        order: 2,
+        isActive: true,
+      },
+      {
+        name: 'Emeka Okafor',
+        role: 'Head of Operations',
+        bio: 'Emeka brings 10 years of operational excellence from the banking sector. He ensures that LoanFlow runs smoothly and efficiently for all customers.',
+        order: 3,
+        isActive: true,
+      },
+    ];
+
+    await TeamMember.insertMany(teamMembers);
+    console.log(' Seeded team members');
+
+    // 8. Seed About Settings (Now safely run after connection)
+    const aboutSettings = {
+      heroHeading: 'Empowering Financial Freedom',
+      heroSubheading: "We're on a mission to make loans accessible, transparent, and fair for everyone",
+      storyTitle: 'Our Story',
+      storyContent: 'LoanFlow was founded in 2020 with a simple vision: to make borrowing simple, fast, and fair for everyone. We saw that traditional banks were slow, opaque, and often rejected qualified borrowers. We built LoanFlow to change that.\n\nToday, we\'ve helped thousands of customers access the funds they need to grow their businesses, pay for education, and achieve their dreams. We\'re proud to be a trusted partner in financial empowerment.',
+      missionStatement: 'To democratize access to affordable loans and empower individuals and businesses to achieve their financial goals.',
+      values: [
+        {
+          title: 'Accessibility',
+          description: 'Making loans available to everyone, regardless of their background or credit history.',
+          icon: 'UserGroupIcon',
+        },
+        {
+          title: 'Transparency',
+          description: 'Clear terms, no hidden fees, and honest communication at every step.',
+          icon: 'EyeIcon',
+        },
+        {
+          title: 'Innovation',
+          description: 'Using cutting-edge technology to make borrowing faster, simpler, and more efficient.',
+          icon: 'LightBulbIcon',
+        },
+        {
+          title: 'Integrity',
+          description: 'Doing the right thing for our customers, every time, without exception.',
+          icon: 'ShieldCheckIcon',
+        },
+      ],
+      isActive: true,
+    };
+
+    await AboutSettings.create(aboutSettings);
+    console.log(' Seeded about settings');
+
     console.log(' Database seeded successfully!');
     process.exit(0);
   } catch (error) {
@@ -248,4 +315,5 @@ const seedData = async () => {
   }
 };
 
+// Execute the seed process
 seedData();

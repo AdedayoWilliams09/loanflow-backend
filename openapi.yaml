@@ -1,5 +1,5 @@
 # FILE: backend/openapi.yaml
-# UPDATED: Merged Homepage Phase schemas and paths into full configuration
+
 
 openapi: 3.0.3
 info:
@@ -15,14 +15,15 @@ info:
     - API connectivity testing
     - Monitoring and diagnostics
 
-    
     ## Homepage Phase Features
-    - System health checks
-    - API connectivity testing
     - Customer testimonials
     - Frequently Asked Questions
     - Loan products
     - Settings (hero, statistics, features)
+
+    ## About Page Phase Features
+    - Get and manage Team Members
+    - Get and update About Page settings (Mission, Story, Values)
     
     ## Upcoming Features
     - User authentication
@@ -30,7 +31,7 @@ info:
     - Repayment management
     - Admin dashboard
     
-  version: 1.1.0
+  version: 1.2.0
   contact:
     name: LoanFlow Support
     email: support@loanflow.com
@@ -57,6 +58,8 @@ tags:
     description: Loan product management
   - name: Settings
     description: Application settings management
+  - name: Team
+    description: Leadership team member details and management
 
 components:
   schemas:
@@ -361,21 +364,100 @@ components:
           enum: [blue, green, purple, orange, red]
           example: blue
 
+    TeamMember:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 67a3b4c5d6e7f8g9h0i1j2k9
+        name:
+          type: string
+          example: Adedayo Williams
+        role:
+          type: string
+          example: CEO & Co-Founder
+        bio:
+          type: string
+          example: Adedayo has over 15 years of experience in fintech and banking...
+        photoUrl:
+          type: string
+          nullable: true
+        photoPublicId:
+          type: string
+          nullable: true
+        order:
+          type: integer
+          default: 0
+        isActive:
+          type: boolean
+          default: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AboutSettings:
+      type: object
+      properties:
+        _id:
+          type: string
+        heroHeading:
+          type: string
+          example: Empowering Financial Freedom
+        heroSubheading:
+          type: string
+          example: We're on a mission to make loans accessible...
+        heroImageUrl:
+          type: string
+          nullable: true
+        heroImagePublicId:
+          type: string
+          nullable: true
+        storyTitle:
+          type: string
+          example: Our Story
+        storyContent:
+          type: string
+          example: LoanFlow was founded in 2020...
+        missionStatement:
+          type: string
+          example: To democratize access to affordable loans...
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/Value'
+        isActive:
+          type: boolean
+          default: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Value:
+      type: object
+      properties:
+        title:
+          type: string
+          example: Accessibility
+        description:
+          type: string
+          example: Making loans available to everyone...
+        icon:
+          type: string
+          example: UserGroupIcon
+
 paths:
   /api/health:
     get:
       tags:
         - Health
       summary: System Health Check
-      description: |
-        Checks if the server is running and healthy.
-        
-        This endpoint is lightweight and fast, making it ideal for:
-        - Monitoring services and load balancers
-        - Frontend to verify backend availability
-        - Quick system status checks
-        
-        The response includes MongoDB connection status to verify database connectivity.
+      description: Checks if the server is running and healthy.
       operationId: getHealth
       responses:
         '200':
@@ -384,47 +466,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HealthResponse'
-              examples:
-                success:
-                  summary: Healthy server
-                  value:
-                    status: OK
-                    timestamp: 2024-01-15T10:30:00.000Z
-                    uptime: 123.45
-                    uptimeFormatted: 2m 3s
-                    mongoConnected: true
-                    mongoState: 1
-                    mongoStateDescription: Connected
-                    environment: development
         '500':
           description: Server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                error:
-                  summary: Server error
-                  value:
-                    success: false
-                    message: Internal Server Error
-                    timestamp: 2024-01-15T10:30:00.000Z
-                    path: /api/health
 
   /api/test:
     get:
       tags:
         - Test
       summary: Test API Connection
-      description: |
-        Tests if the API is reachable and functioning properly.
-        
-        This endpoint is used for:
-        - Frontend-backend connectivity testing
-        - Verifying API is operational
-        - Debugging connection issues
-        
-        It validates that no unexpected query parameters are sent as a security measure.
+      description: Tests if the API is reachable and functioning properly.
       operationId: testConnection
       parameters:
         - name: invalid
@@ -440,47 +494,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TestResponse'
-              examples:
-                success:
-                  summary: API is healthy
-                  value:
-                    success: true
-                    message: API connection successful
-                    data:
-                      backendStatus: healthy
-                      timestamp: 2024-01-15T10:30:00.000Z
-                      uptime: 123.45
-                      environment: development
-                      apiVersion: 1.0.0
         '400':
           description: Invalid query parameters
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                invalidParam:
-                  summary: Invalid query parameter
-                  value:
-                    success: false
-                    message: Invalid query parameters
-                    errors:
-                      - field: invalid
-                        message: "Unexpected query parameters: invalid"
-                    timestamp: 2024-01-15T10:30:00.000Z
         '429':
           description: Rate limit exceeded
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                rateLimit:
-                  summary: Too many requests
-                  value:
-                    success: false
-                    message: Too many requests from this IP, please try again later.
-                    timestamp: 2024-01-15T10:30:00.000Z
         '500':
           description: Server error
           content:
@@ -493,10 +518,7 @@ paths:
       tags:
         - Health
       summary: Simple Health Check
-      description: |
-        Quick health check endpoint without API prefix.
-        
-        Returns minimal health information. Use `/api/health` for detailed status.
+      description: Quick health check endpoint without API prefix.
       operationId: simpleHealth
       responses:
         '200':
@@ -512,13 +534,10 @@ paths:
                   timestamp:
                     type: string
                     format: date-time
-                    example: 2024-01-15T10:30:00.000Z
                   environment:
                     type: string
-                    example: development
                   uptime:
                     type: number
-                    example: 123.45
 
   /api/testimonials:
     get:
@@ -533,19 +552,16 @@ paths:
           schema:
             type: integer
             default: 6
-          description: Number of testimonials to return
         - name: page
           in: query
           schema:
             type: integer
             default: 1
-          description: Page number for pagination
         - name: isActive
           in: query
           schema:
             type: boolean
             default: true
-          description: Filter by active status
       responses:
         '200':
           description: Testimonials retrieved successfully
@@ -556,29 +572,17 @@ paths:
                 properties:
                   success:
                     type: boolean
-                    example: true
                   message:
                     type: string
-                    example: Testimonials retrieved successfully
                   data:
                     type: array
                     items:
                       $ref: '#/components/schemas/Testimonial'
                   pagination:
                     type: object
-                    properties:
-                      page:
-                        type: integer
-                      limit:
-                        type: integer
-                      total:
-                        type: integer
-                      pages:
-                        type: integer
                   timestamp:
                     type: string
-                    format: date-time
-  
+
   /api/faqs:
     get:
       tags:
@@ -592,19 +596,16 @@ paths:
           schema:
             type: integer
             default: 10
-          description: Number of FAQs to return
         - name: category
           in: query
           schema:
             type: string
             enum: [general, loans, repayment, account]
-          description: Filter by category
         - name: isActive
           in: query
           schema:
             type: boolean
             default: true
-          description: Filter by active status
       responses:
         '200':
           description: FAQs retrieved successfully
@@ -615,18 +616,15 @@ paths:
                 properties:
                   success:
                     type: boolean
-                    example: true
                   message:
                     type: string
-                    example: FAQs retrieved successfully
                   data:
                     type: array
                     items:
                       $ref: '#/components/schemas/FAQ'
                   timestamp:
                     type: string
-                    format: date-time
-  
+
   /api/loan-products:
     get:
       tags:
@@ -640,13 +638,11 @@ paths:
           schema:
             type: integer
             default: 10
-          description: Number of products to return
         - name: isActive
           in: query
           schema:
             type: boolean
             default: true
-          description: Filter by active status
       responses:
         '200':
           description: Loan products retrieved successfully
@@ -657,18 +653,15 @@ paths:
                 properties:
                   success:
                     type: boolean
-                    example: true
                   message:
                     type: string
-                    example: Loan products retrieved successfully
                   data:
                     type: array
                     items:
                       $ref: '#/components/schemas/LoanProduct'
                   timestamp:
                     type: string
-                    format: date-time
-  
+
   /api/settings/statistics:
     get:
       tags:
@@ -686,16 +679,13 @@ paths:
                 properties:
                   success:
                     type: boolean
-                    example: true
                   message:
                     type: string
-                    example: Statistics retrieved successfully
                   data:
                     $ref: '#/components/schemas/Statistics'
                   timestamp:
                     type: string
-                    format: date-time
-  
+
   /api/settings/hero:
     get:
       tags:
@@ -713,16 +703,13 @@ paths:
                 properties:
                   success:
                     type: boolean
-                    example: true
                   message:
                     type: string
-                    example: Hero content retrieved successfully
                   data:
                     $ref: '#/components/schemas/HeroContent'
                   timestamp:
                     type: string
-                    format: date-time
-  
+
   /api/settings/features:
     get:
       tags:
@@ -740,14 +727,181 @@ paths:
                 properties:
                   success:
                     type: boolean
-                    example: true
                   message:
                     type: string
-                    example: Features retrieved successfully
                   data:
                     type: array
                     items:
                       $ref: '#/components/schemas/Feature'
+                  timestamp:
+                    type: string
+
+  /api/team:
+    get:
+      tags:
+        - Team
+      summary: Get Team Members
+      description: Retrieves active team members
+      operationId: getTeamMembers
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+          description: Number of team members to return
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+            default: true
+          description: Filter by active status
+      responses:
+        '200':
+          description: Team members retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Team members retrieved successfully
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TeamMember'
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /api/team/{id}:
+    get:
+      tags:
+        - Team
+      summary: Get Single Team Member
+      description: Retrieves a specific team member by ID
+      operationId: getTeamMemberById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Team member ID
+      responses:
+        '200':
+          description: Team member retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Team member retrieved successfully
+                  data:
+                    $ref: '#/components/schemas/TeamMember'
+                  timestamp:
+                    type: string
+                    format: date-time
+        '404':
+          description: Team member not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Team member not found
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /api/settings/about:
+    get:
+      tags:
+        - Settings
+      summary: Get About Settings
+      description: Retrieves about page settings
+      operationId: getAboutSettings
+      responses:
+        '200':
+          description: About settings retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: About settings retrieved successfully
+                  data:
+                    $ref: '#/components/schemas/AboutSettings'
+                  timestamp:
+                    type: string
+                    format: date-time
+
+    put:
+      tags:
+        - Settings
+      summary: Update About Settings
+      description: Updates about page settings
+      operationId: updateAboutSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                heroHeading:
+                  type: string
+                heroSubheading:
+                  type: string
+                heroImageUrl:
+                  type: string
+                heroImagePublicId:
+                  type: string
+                storyTitle:
+                  type: string
+                storyContent:
+                  type: string
+                missionStatement:
+                  type: string
+                values:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Value'
+      responses:
+        '200':
+          description: About settings updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: About settings updated successfully
+                  data:
+                    $ref: '#/components/schemas/AboutSettings'
                   timestamp:
                     type: string
                     format: date-time
