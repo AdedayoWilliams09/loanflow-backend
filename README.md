@@ -439,6 +439,47 @@ None - using existing dependencies
 
 
 
+## Phase 4: FAQ Page Implementation
+
+### New API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/faqs` | GET | Get FAQs with category filtering and search |
+| `/api/faqs/categories` | GET | Get distinct FAQ categories |
+
+### Updated Models/Schemas
+- `FAQ` - Enhanced with filtering support (no schema changes needed)
+
+### Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| category | string | Filter by category (general, loans, repayment, account) |
+| search | string | Search term for question text |
+| limit | number | Number of FAQs to return |
+| isActive | boolean | Filter by active status |
+
+### New Environment Variables
+None added in this phase
+
+### New Dependencies Installed
+None - using existing dependencies
+
+### Postman Test Cases
+
+| Test Case | Endpoint | Method | Expected Status | Expected Response |
+|-----------|----------|--------|-----------------|-------------------|
+| Get All FAQs | `/api/faqs` | GET | 200 | Array of FAQ objects |
+| Filter by Category | `/api/faqs?category=loans` | GET | 200 | Filtered FAQs |
+| Search FAQs | `/api/faqs?search=approval` | GET | 200 | Searched FAQs |
+| Get Categories | `/api/faqs/categories` | GET | 200 | Array of categories |
+| Combined Filter | `/api/faqs?category=loans&search=approve` | GET | 200 | Filtered and searched FAQs |
+
+
+
+
+
 ### Links
 - [Frontend README](https://github.com/AdedayoWilliams09/loanflow-frontend) - Documentation for the frontend
 

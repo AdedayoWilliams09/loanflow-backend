@@ -586,25 +586,33 @@ paths:
     get:
       tags:
         - FAQs
-      summary: Get FAQs
-      description: Retrieves active frequently asked questions
+      summary: Get FAQs with Filters
+      description: Retrieves FAQs with category filtering and search support
       operationId: getFAQs
       parameters:
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 10
         - name: category
           in: query
           schema:
             type: string
             enum: [general, loans, repayment, account]
+          description: Filter by category
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search term for question text
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+          description: Number of FAQs to return
         - name: isActive
           in: query
           schema:
             type: boolean
             default: true
+          description: Filter by active status
       responses:
         '200':
           description: FAQs retrieved successfully
@@ -615,14 +623,61 @@ paths:
                 properties:
                   success:
                     type: boolean
+                    example: true
                   message:
                     type: string
+                    example: FAQs retrieved successfully
                   data:
                     type: array
                     items:
                       $ref: '#/components/schemas/FAQ'
+                  categories:
+                    type: array
+                    items:
+                      type: string
+                    example: ["general", "loans", "repayment", "account"]
+                  filters:
+                    type: object
+                    properties:
+                      category:
+                        type: string
+                        nullable: true
+                      search:
+                        type: string
+                        nullable: true
                   timestamp:
                     type: string
+                    format: date-time
+
+  /api/faqs/categories:
+    get:
+      tags:
+        - FAQs
+      summary: Get FAQ Categories
+      description: Retrieves distinct FAQ categories for filter pills
+      operationId: getFAQCategories
+      responses:
+        '200':
+          description: FAQ categories retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: FAQ categories retrieved successfully
+                  data:
+                    type: array
+                    items:
+                      type: string
+                    example: ["general", "loans", "repayment", "account"]
+                  timestamp:
+                    type: string
+                    format: date-time
 
   /api/loan-products:
     get:
