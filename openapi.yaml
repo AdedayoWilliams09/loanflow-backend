@@ -1,6 +1,5 @@
 # FILE: backend/openapi.yaml
 
-
 openapi: 3.0.3
 info:
   title: LoanFlow API
@@ -31,7 +30,7 @@ info:
     - Repayment management
     - Admin dashboard
     
-  version: 1.2.0
+  version: 1.3.0
   contact:
     name: LoanFlow Support
     email: support@loanflow.com
@@ -629,20 +628,53 @@ paths:
     get:
       tags:
         - Loan Products
-      summary: Get Loan Products
-      description: Retrieves active loan products
+      summary: Get Loan Products with Filters
+      description: Retrieves loan products with filtering, search, and pagination support
       operationId: getLoanProducts
       parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+          description: Filter by product type
+        - name: minAmount
+          in: query
+          schema:
+            type: number
+          description: Minimum loan amount
+        - name: maxAmount
+          in: query
+          schema:
+            type: number
+          description: Maximum loan amount
+        - name: duration
+          in: query
+          schema:
+            type: integer
+          description: Repayment period in months
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search term for name/description
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number
         - name: limit
           in: query
           schema:
             type: integer
             default: 10
+          description: Items per page
         - name: isActive
           in: query
           schema:
             type: boolean
             default: true
+          description: Filter by active status
       responses:
         '200':
           description: Loan products retrieved successfully
@@ -653,14 +685,76 @@ paths:
                 properties:
                   success:
                     type: boolean
+                    example: true
                   message:
                     type: string
+                    example: Loan products retrieved successfully
                   data:
                     type: array
                     items:
                       $ref: '#/components/schemas/LoanProduct'
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+                      total:
+                        type: integer
+                      pages:
+                        type: integer
+                  filters:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        nullable: true
+                      minAmount:
+                        type: number
+                        nullable: true
+                      maxAmount:
+                        type: number
+                        nullable: true
+                      duration:
+                        type: integer
+                        nullable: true
+                      search:
+                        type: string
+                        nullable: true
                   timestamp:
                     type: string
+                    format: date-time
+
+  /api/loan-products/types:
+    get:
+      tags:
+        - Loan Products
+      summary: Get Loan Product Types
+      description: Retrieves distinct loan product types for filter dropdown
+      operationId: getLoanProductTypes
+      responses:
+        '200':
+          description: Loan product types retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Loan product types retrieved successfully
+                  data:
+                    type: array
+                    items:
+                      type: string
+                    example: ["Personal Loan", "Business Loan", "Salary Advance", "Student Loan"]
+                  timestamp:
+                    type: string
+                    format: date-time
 
   /api/settings/statistics:
     get:

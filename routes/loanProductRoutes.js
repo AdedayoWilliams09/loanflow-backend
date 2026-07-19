@@ -2,15 +2,24 @@
 
 
 import express from 'express';
-import { getLoanProducts } from '../controllers/loanProductController.js';
+import { getLoanProducts, getLoanProductTypes } from '../controllers/loanProductController.js';
 
 const router = express.Router();
 
 /**
- * GET /api/loan-products
- *  "This sign says 'Loan options are here!'"
- *  "Retrieves active loan products with limit support"
+ * GET /api/loan-products/types
+ *  "This sign says 'What types of loans are available?'"
+ *  "Retrieves distinct loan product types"
  */
+
+router.get('/types', getLoanProductTypes);
+
+/**
+ * GET /api/loan-products
+ *  "This sign says 'All loan options are here!'"
+ *  "Retrieves loan products with filtering and pagination"
+ */
+
 router.get('/', getLoanProducts);
 
 export default router;

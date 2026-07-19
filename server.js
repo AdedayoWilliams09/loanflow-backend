@@ -130,7 +130,7 @@ if (process.env.NODE_ENV === 'development') {
 //  "This is like a bouncer that limits how many people can enter"
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per window
+  max: 300, // limit each IP to 100 requests per window
   message: {
     success: false,
     message: 'Too many requests from this IP, please try again later.',
@@ -138,7 +138,17 @@ const limiter = rateLimit({
   },
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+
+  skip: (req) => {
+    return req.method === 'GET' && (
+      req.originalUrl.startsWith('/api/loan-products') || 
+      req.originalUrl.startsWith('/api/team') ||
+      req.originalUrl.startsWith('/api/faqs')
+    );
+  }
 });
+
+
 app.use('/api', limiter);
 
 // 7. Health Check Endpoint (before API routes - always available)
