@@ -1,28 +1,28 @@
 // FILE: backend/src/services/emailService.js
-import nodemailer from 'nodemailer';
-import { google } from 'googleapis';
-import dotenv from 'dotenv';
+import nodemailer from "nodemailer";
+import { google } from "googleapis";
+import dotenv from "dotenv";
 
 // Ensure environment variables are loaded immediately
 dotenv.config();
 
 /**
  * Email Service
- * 
+ *
  *  Child Explanation:
  * "This is the mailroom that sends emails to customers and support team."
- * 
+ *
  *  Technical Explanation:
  * "Email service using Nodemailer with Google OAuth2 for sending emails."
  */
 
 /**
  * Create Email Transporter
- * 
- * 🧒 Child Explanation:
+ *
+ *  Child Explanation:
  * "This sets up the connection to Gmail so we can send emails."
- * 
- * 👨‍💻 Technical Explanation:
+ *
+ *  Technical Explanation:
  * "Creates a Nodemailer transporter with OAuth2 authentication."
  */
 const createTransporter = async () => {
@@ -30,7 +30,8 @@ const createTransporter = async () => {
     const oAuth2Client = new google.auth.OAuth2(
       process.env.GMAIL_CLIENT_ID,
       process.env.GMAIL_CLIENT_SECRET,
-      process.env.GMAIL_CALLBACK_URL || 'https://developers.google.com/oauthplayground'
+      process.env.GMAIL_CALLBACK_URL ||
+        "https://developers.google.com/oauthplayground",
     );
 
     oAuth2Client.setCredentials({
@@ -40,9 +41,13 @@ const createTransporter = async () => {
     const accessToken = await oAuth2Client.getAccessToken();
 
     return nodemailer.createTransport({
-      service: 'gmail',
+      service: "gmail",
+      host: "smtp.gmail.com", 
+      port: 465,
+      secure: true,
+      family: 4,
       auth: {
-        type: 'OAuth2',
+        type: "OAuth2",
         user: process.env.GMAIL_USER,
         clientId: process.env.GMAIL_CLIENT_ID,
         clientSecret: process.env.GMAIL_CLIENT_SECRET,
@@ -51,8 +56,8 @@ const createTransporter = async () => {
       },
     });
   } catch (error) {
-    console.error('❌ Email transporter creation failed:', error.message);
-    throw new Error('Failed to create email transporter');
+    console.error("❌ Email transporter creation failed:", error.message);
+    throw new Error("Failed to create email transporter");
   }
 };
 
@@ -62,7 +67,7 @@ const createTransporter = async () => {
 export const sendContactEmail = async (data, ipAddress, userAgent) => {
   try {
     const transporter = await createTransporter();
-    
+
     // Send to support team
     const supportMailOptions = {
       from: `"LoanFlow Contact" <${process.env.GMAIL_USER}>`,
@@ -98,19 +103,23 @@ export const sendContactEmail = async (data, ipAddress, userAgent) => {
                 <div class="label">Email:</div>
                 <div class="value">${data.email}</div>
               </div>
-              ${data.phone ? `
+              ${
+                data.phone
+                  ? `
               <div class="field">
                 <div class="label">Phone:</div>
                 <div class="value">${data.phone}</div>
               </div>
-              ` : ''}
+              `
+                  : ""
+              }
               <div class="field">
                 <div class="label">Subject:</div>
                 <div class="value">${data.subject}</div>
               </div>
               <div class="field">
                 <div class="label">Message:</div>
-                <div class="value">${data.message.replace(/\n/g, '<br>')}</div>
+                <div class="value">${data.message.replace(/\n/g, "<br>")}</div>
               </div>
               <hr>
               <div style="font-size: 12px; color: #6b7280;">
@@ -126,15 +135,15 @@ export const sendContactEmail = async (data, ipAddress, userAgent) => {
         </html>
       `,
     };
-    
+
     await transporter.sendMail(supportMailOptions);
-    console.log('✅ Support notification email sent');
+    console.log("✅ Support notification email sent");
 
     // Send auto-reply to user
     const replyMailOptions = {
       from: `"LoanFlow Support" <${process.env.GMAIL_USER}>`,
       to: data.email,
-      subject: 'Thank You for Contacting LoanFlow',
+      subject: "Thank You for Contacting LoanFlow",
       html: `
         <!DOCTYPE html>
         <html>
@@ -172,13 +181,13 @@ export const sendContactEmail = async (data, ipAddress, userAgent) => {
         </html>
       `,
     };
-    
+
     await transporter.sendMail(replyMailOptions);
-    console.log('✅ Auto-reply email sent to user');
+    console.log("✅ Auto-reply email sent to user");
 
     return { success: true };
   } catch (error) {
-    console.error('❌ Email sending failed:', error.message);
+    console.error("❌ Email sending failed:", error.message);
     throw new Error(`Failed to send email: ${error.message}`);
   }
 };
@@ -189,23 +198,23 @@ export const sendContactEmail = async (data, ipAddress, userAgent) => {
 export const sendTestEmail = async (to) => {
   try {
     const transporter = await createTransporter();
-    
+
     const mailOptions = {
       from: `"LoanFlow" <${process.env.GMAIL_USER}>`,
       to: to || process.env.GMAIL_USER,
-      subject: 'LoanFlow Email Test',
+      subject: "LoanFlow Email Test",
       html: `
         <h1>Email Configuration Test</h1>
         <p>If you're receiving this email, your email configuration is working correctly!</p>
         <p>Sent at: ${new Date().toISOString()}</p>
       `,
     };
-    
+
     await transporter.sendMail(mailOptions);
-    console.log('✅ Test email sent successfully');
+    console.log("✅ Test email sent successfully");
     return { success: true };
   } catch (error) {
-    console.error('❌ Test email failed:', error.message);
+    console.error("❌ Test email failed:", error.message);
     throw new Error(`Failed to send test email: ${error.message}`);
   }
 };

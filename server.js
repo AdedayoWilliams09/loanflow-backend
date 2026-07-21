@@ -22,6 +22,7 @@ import teamRoutes from './routes/teamRoutes.js';
 import aboutRoutes from './routes/aboutRoutes.js';
 import contactRoutes from './routes/contactRoutes.js';
 import emailRoutes from './routes/emailRoutes.js'; 
+import dns from 'node:dns';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -75,6 +76,10 @@ validateEnv();
 
 // Initialize Express app
 const app = express();
+
+// Trust reverse proxies (Required for Render, Heroku, Vercel & rate-limiting)
+app.set('trust proxy', 1);
+
 const PORT = parseInt(process.env.PORT, 10);
 
 /**
