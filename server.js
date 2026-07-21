@@ -1,5 +1,8 @@
 // FILE: backend/server.js
 
+import dns from 'node:dns';
+dns.setDefaultResultOrder('ipv4first');
+
 import getSwaggerUI from './config/swagger.js';
 import swaggerUi from 'swagger-ui-express';
 import express from 'express';
@@ -22,7 +25,7 @@ import teamRoutes from './routes/teamRoutes.js';
 import aboutRoutes from './routes/aboutRoutes.js';
 import contactRoutes from './routes/contactRoutes.js';
 import emailRoutes from './routes/emailRoutes.js'; 
-import dns from 'node:dns';
+
 
 // Load environment variables from .env file
 dotenv.config();
