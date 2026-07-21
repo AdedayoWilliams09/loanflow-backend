@@ -477,6 +477,53 @@ None - using existing dependencies
 | Combined Filter | `/api/faqs?category=loans&search=approve` | GET | 200 | Filtered and searched FAQs |
 
 
+## Phase 5: Contact Page Implementation
+
+### New API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/contact` | POST | Submit contact form |
+| `/api/email/test` | POST | Test email configuration |
+
+### New Models/Schemas
+
+| Model | Description |
+|-------|-------------|
+| `ContactSubmission` | Contact form submissions with status tracking |
+
+### New Middleware
+- Rate limiting: 5 submissions per hour per IP (already configured globally)
+
+### New Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| GMAIL_USER | Gmail account email |
+| GMAIL_CLIENT_ID | Google OAuth2 client ID |
+| GMAIL_CLIENT_SECRET | Google OAuth2 client secret |
+| GMAIL_REFRESH_TOKEN | Google OAuth2 refresh token |
+| GMAIL_CALLBACK_URL | OAuth2 callback URL |
+| CONTACT_EMAIL | Email to receive contact notifications |
+
+### New Dependencies Installed
+| Package | Version | Purpose |
+|---------|---------|---------|
+| nodemailer | Latest | Email sending |
+| googleapis | Latest | Google OAuth2 |
+
+### Postman Test Cases
+
+| Test Case | Endpoint | Method | Expected Status | Expected Response |
+|-----------|----------|--------|-----------------|-------------------|
+| Submit Contact | `/api/contact` | POST | 201 | Success message with ID |
+| Missing Required Field | `/api/contact` | POST | 400 | Validation errors |
+| Invalid Email | `/api/contact` | POST | 400 | Email validation error |
+| Short Message | `/api/contact` | POST | 400 | Message length error |
+| Test Email | `/api/email/test` | POST | 200 | Success message |
+| Rate Limiting | `/api/contact` | POST | 429 | Rate limit exceeded |
+
+
 
 
 

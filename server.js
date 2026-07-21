@@ -20,6 +20,8 @@ import homepageRoutes from './routes/homepageRoutes.js';
 import settingsRoutes from './routes/settingsRoutes.js';
 import teamRoutes from './routes/teamRoutes.js';
 import aboutRoutes from './routes/aboutRoutes.js';
+import contactRoutes from './routes/contactRoutes.js';
+import emailRoutes from './routes/emailRoutes.js'; 
 
 // Load environment variables from .env file
 dotenv.config();
@@ -94,8 +96,22 @@ app.use(helmet());
 
 // 2. CORS Configuration
 //  "This is a security guard that only lets approved people in"
+// 2. CORS Configuration
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:5173',
+  
+];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like Postman, mobile apps, curl)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS policy does not allow access from origin: ${origin}`));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -180,6 +196,10 @@ app.use('/api/team', teamRoutes);
 app.use('/api/settings/about', aboutRoutes);
 
 app.use('/api/settings', settingsRoutes);
+
+app.use('/api/contact', contactRoutes);
+
+app.use('/api/email', emailRoutes);
 
 // 9. 404 Handler (must be after all routes)
 //  "This is for when someone asks for something that doesn't exist"
