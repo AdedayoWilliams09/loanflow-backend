@@ -1,64 +1,50 @@
 // FILE: backend/src/services/emailService.js
-import nodemailer from "nodemailer";
 import { google } from "googleapis";
+import MailComposer from "nodemailer/lib/mail-composer/index.js";
 import dotenv from "dotenv";
 
-// Ensure environment variables are loaded immediately
 dotenv.config();
 
 /**
- * Email Service
- *
- *  Child Explanation:
- * "This is the mailroom that sends emails to customers and support team."
- *
- *  Technical Explanation:
- * "Email service using Nodemailer with Google OAuth2 for sending emails."
+ * Creates and authenticates the Gmail API Client
  */
+const getGmailClient = () => {
+  const oAuth2Client = new google.auth.OAuth2(
+    process.env.GMAIL_CLIENT_ID,
+    process.env.GMAIL_CLIENT_SECRET,
+    process.env.GMAIL_CALLBACK_URL || "https://developers.google.com/oauthplayground"
+  );
+
+  oAuth2Client.setCredentials({
+    refresh_token: process.env.GMAIL_REFRESH_TOKEN,
+  });
+
+  return google.gmail({ version: "v1", auth: oAuth2Client });
+};
 
 /**
- * Create Email Transporter
- *
- *  Child Explanation:
- * "This sets up the connection to Gmail so we can send emails."
- *
- *  Technical Explanation:
- * "Creates a Nodemailer transporter with OAuth2 authentication."
+ * Helper to compose raw email MIME and send via Gmail HTTP API
  */
-const createTransporter = async () => {
-  try {
-    const oAuth2Client = new google.auth.OAuth2(
-      process.env.GMAIL_CLIENT_ID,
-      process.env.GMAIL_CLIENT_SECRET,
-      process.env.GMAIL_CALLBACK_URL ||
-        "https://developers.google.com/oauthplayground",
-    );
+const sendMailViaHttp = async (mailOptions) => {
+  const gmail = getGmailClient();
+  const composer = new MailComposer(mailOptions);
+  const message = await composer.compile().build();
 
-    oAuth2Client.setCredentials({
-      refresh_token: process.env.GMAIL_REFRESH_TOKEN,
-    });
+  // Convert email buffer to base64url format required by Gmail API
+  const rawMessage = Buffer.from(message)
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
 
-    const accessToken = await oAuth2Client.getAccessToken();
+  const res = await gmail.users.messages.send({
+    userId: "me",
+    requestBody: {
+      raw: rawMessage,
+    },
+  });
 
-    return nodemailer.createTransport({
-      // service: "gmail",
-      host: "smtp.gmail.com", 
-      port: 465,
-      secure: true,
-      family: 4,
-      auth: {
-        type: "OAuth2",
-        user: process.env.GMAIL_USER,
-        clientId: process.env.GMAIL_CLIENT_ID,
-        clientSecret: process.env.GMAIL_CLIENT_SECRET,
-        refreshToken: process.env.GMAIL_REFRESH_TOKEN,
-        accessToken: accessToken.token,
-      },
-    });
-  } catch (error) {
-    console.error("❌ Email transporter creation failed:", error.message);
-    throw new Error("Failed to create email transporter");
-  }
+  return res.data;
 };
 
 /**
@@ -66,9 +52,7 @@ const createTransporter = async () => {
  */
 export const sendContactEmail = async (data, ipAddress, userAgent) => {
   try {
-    const transporter = await createTransporter();
-
-    // Send to support team
+    // 1. Send Support Notification Email
     const supportMailOptions = {
       from: `"LoanFlow Contact" <${process.env.GMAIL_USER}>`,
       to: process.env.CONTACT_EMAIL || process.env.GMAIL_USER,
@@ -136,10 +120,10 @@ export const sendContactEmail = async (data, ipAddress, userAgent) => {
       `,
     };
 
-    await transporter.sendMail(supportMailOptions);
-    console.log("✅ Support notification email sent");
+    await sendMailViaHttp(supportMailOptions);
+    console.log("✅ Support notification email sent via HTTP API");
 
-    // Send auto-reply to user
+    // 2. Send Auto-reply to User
     const replyMailOptions = {
       from: `"LoanFlow Support" <${process.env.GMAIL_USER}>`,
       to: data.email,
@@ -182,8 +166,8 @@ export const sendContactEmail = async (data, ipAddress, userAgent) => {
       `,
     };
 
-    await transporter.sendMail(replyMailOptions);
-    console.log("✅ Auto-reply email sent to user");
+    await sendMailViaHttp(replyMailOptions);
+    console.log("✅ Auto-reply email sent to user via HTTP API");
 
     return { success: true };
   } catch (error) {
@@ -197,21 +181,19 @@ export const sendContactEmail = async (data, ipAddress, userAgent) => {
  */
 export const sendTestEmail = async (to) => {
   try {
-    const transporter = await createTransporter();
-
     const mailOptions = {
       from: `"LoanFlow" <${process.env.GMAIL_USER}>`,
       to: to || process.env.GMAIL_USER,
       subject: "LoanFlow Email Test",
       html: `
         <h1>Email Configuration Test</h1>
-        <p>If you're receiving this email, your email configuration is working correctly!</p>
+        <p>If you're receiving this email, your HTTP Gmail API configuration is working correctly!</p>
         <p>Sent at: ${new Date().toISOString()}</p>
       `,
     };
 
-    await transporter.sendMail(mailOptions);
-    console.log("✅ Test email sent successfully");
+    await sendMailViaHttp(mailOptions);
+    console.log("✅ Test email sent successfully via HTTP API");
     return { success: true };
   } catch (error) {
     console.error("❌ Test email failed:", error.message);
