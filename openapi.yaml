@@ -27,14 +27,20 @@ info:
     ## Contact Page Phase Features
     - Submit contact form with validation and email notifications
     - Test email configuration
+
+    ## Login / Auth Page Phase Features
+    - User authentication with email/password
+    - Refresh token & user session management
+    - Get authenticated user profile & logout
     
     ## Upcoming Features
-    - User authentication
+    - User registration
+    - Password reset & email verification
     - Loan application processing
     - Repayment management
     - Admin dashboard
     
-  version: 1.5.0
+  version: 1.6.0
   contact:
     name: LoanFlow Support
     email: support@loanflow.com
@@ -53,6 +59,8 @@ tags:
     description: System health monitoring endpoints
   - name: Test
     description: API connectivity testing endpoints
+  - name: Authentication
+    description: User authentication and token management
   - name: Testimonials
     description: Customer testimonial management
   - name: FAQs
@@ -69,7 +77,128 @@ tags:
     description: Email configuration testing endpoints
 
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
+    # -------------------------------------------------------------
+    # Authentication Schemas
+    # -------------------------------------------------------------
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 67a3b4c5d6e7f8g9h0i1j3k4
+        firstName:
+          type: string
+          example: Test
+        lastName:
+          type: string
+          example: User
+        email:
+          type: string
+          format: email
+          example: test@example.com
+        role:
+          type: string
+          enum: [customer, loan_officer, admin]
+          example: customer
+        isEmailVerified:
+          type: boolean
+          example: true
+        profilePicture:
+          type: string
+          nullable: true
+        preferences:
+          type: object
+          properties:
+            notifications:
+              type: boolean
+              example: true
+            theme:
+              type: string
+              enum: [light, dark, system]
+              example: system
+        createdAt:
+          type: string
+          format: date-time
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: test@example.com
+        password:
+          type: string
+          example: Password123!
+        rememberMe:
+          type: boolean
+          example: true
+
+    LoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Login successful
+        data:
+          type: object
+          properties:
+            accessToken:
+              type: string
+              example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+            refreshToken:
+              type: string
+              example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+            user:
+              $ref: '#/components/schemas/User'
+        timestamp:
+          type: string
+          format: date-time
+
+    RefreshTokenRequest:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+    RefreshTokenResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Token refreshed successfully
+        data:
+          type: object
+          properties:
+            accessToken:
+              type: string
+              example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        timestamp:
+          type: string
+          format: date-time
+
+    # -------------------------------------------------------------
+    # General & Utility Schemas
+    # -------------------------------------------------------------
     HealthResponse:
       type: object
       properties:
@@ -508,6 +637,234 @@ components:
           format: date-time
 
 paths:
+  # -------------------------------------------------------------
+  # Authentication Paths
+  # -------------------------------------------------------------
+  /api/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User Login
+      description: Authenticates a user with email and password
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Validation failed
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        field:
+                          type: string
+                        message:
+                          type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '401':
+          description: Invalid credentials or account locked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Invalid credentials
+                  timestamp:
+                    type: string
+                    format: date-time
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Too many requests
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /api/auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh Token
+      description: Generates a new access token using a refresh token
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshTokenResponse'
+        '400':
+          description: Refresh token is required
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Refresh token is required
+                  timestamp:
+                    type: string
+                    format: date-time
+        '401':
+          description: Invalid or expired refresh token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Invalid refresh token
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /api/auth/me:
+    get:
+      tags:
+        - Authentication
+      summary: Get Current User
+      description: Returns the current authenticated user's profile
+      operationId: getCurrentUser
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: User retrieved successfully
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+                  timestamp:
+                    type: string
+                    format: date-time
+        '401':
+          description: Not authorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Not authorized
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /api/auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Logout
+      description: Handles logout (client-side token removal)
+      operationId: logout
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Logged out successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Logged out successfully
+                  timestamp:
+                    type: string
+                    format: date-time
+        '401':
+          description: Not authorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Not authorized
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  # -------------------------------------------------------------
+  # Existing Application Paths
+  # -------------------------------------------------------------
   /api/health:
     get:
       tags:

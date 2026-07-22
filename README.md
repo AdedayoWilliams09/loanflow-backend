@@ -525,6 +525,68 @@ None - using existing dependencies
 
 
 
+## Phase 6: Login Page Implementation
+
+### New API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/auth/login` | POST | Authenticate user |
+| `/api/auth/refresh` | POST | Refresh access token |
+| `/api/auth/me` | GET | Get current user |
+| `/api/auth/logout` | POST | Logout user |
+| `/api/auth/google` | GET | Initiate Google OAuth |
+| `/api/auth/google/callback` | GET | Google OAuth callback |
+
+### New Models/Schemas
+
+| Model | Description |
+|-------|-------------|
+| `User` | User authentication and profile data |
+
+### New Middleware
+
+| Middleware | Description |
+|------------|-------------|
+| `protect` | JWT authentication middleware |
+| `authorize` | Role-based authorization middleware |
+
+### New Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| JWT_SECRET | Secret for signing JWT tokens |
+| JWT_REFRESH_SECRET | Secret for signing refresh tokens |
+| JWT_EXPIRES_IN | Access token expiration (e.g., 1d) |
+| JWT_REFRESH_EXPIRES_IN | Refresh token expiration (e.g., 7d) |
+| GOOGLE_CLIENT_ID | Google OAuth client ID |
+| GOOGLE_CLIENT_SECRET | Google OAuth client secret |
+| GOOGLE_CALLBACK_URL | Google OAuth callback URL |
+
+### New Dependencies Installed
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| jsonwebtoken | Latest | JWT token generation |
+| bcryptjs | Latest | Password hashing |
+| passport | Latest | Authentication middleware |
+| passport-google-oauth20 | Latest | Google OAuth strategy |
+
+### Postman Test Cases
+
+| Test Case | Endpoint | Method | Expected Status | Expected Response |
+|-----------|----------|--------|-----------------|-------------------|
+| Valid Login | `/api/auth/login` | POST | 200 | Access token + user data |
+| Invalid Password | `/api/auth/login` | POST | 401 | Invalid credentials |
+| Non-existent User | `/api/auth/login` | POST | 401 | Invalid credentials |
+| Missing Fields | `/api/auth/login` | POST | 400 | Validation errors |
+| Account Lockout | `/api/auth/login` ×5 | POST | 401 | Account locked message |
+| Refresh Token | `/api/auth/refresh` | POST | 200 | New access token |
+| Get User | `/api/auth/me` | GET | 200 | User profile |
+| Logout | `/api/auth/logout` | POST | 200 | Success message |
+
+
+
 
 
 ### Links
